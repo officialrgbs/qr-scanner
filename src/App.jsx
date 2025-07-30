@@ -58,12 +58,18 @@ function App() {
   }, []);
 
   return (
-    <div className="p-20">
-      <h2>QR Code Scanner</h2>
-      <div id="qr-reader" className="w-[300px]"></div>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-4">
+      <h2 className="text-2xl font-semibold text-center mb-4">📷 QR Code Scanner</h2>
+
+      <div
+        id="qr-reader"
+        className="w-full max-w-xs aspect-square rounded-lg overflow-hidden shadow-md border border-gray-300"
+      ></div>
+
       {qrData && (
-        <div className="mt-5 p-4 bg-gray-100 rounded">
-          <strong>Scanned:</strong> {qrData}
+        <div className="mt-6 p-4 w-full max-w-xs bg-white shadow-md rounded-lg border border-green-400">
+          <p className="text-green-700 font-medium text-sm">✅ Scanned Data:</p>
+          <p className="text-gray-800 break-all">{qrData}</p>
         </div>
       )}
     </div>
