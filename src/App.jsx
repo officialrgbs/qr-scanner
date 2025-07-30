@@ -45,7 +45,7 @@ function App() {
                     const now = new Date();
 
                     const manilaTime = new Date(
-                      now.toLocaleString('en-US', { timeZone: "Asia/Manila "})
+                      now.toLocaleString('en-US', { timeZone: "Asia/Manila"})
                     )
 
                     // Date format: 2025-07-31
