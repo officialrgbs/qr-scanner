@@ -2,6 +2,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { DateTime } from "luxon";
 
 function App() {
   const [qrData, setQrData] = useState("");
@@ -44,16 +45,12 @@ function App() {
                     const studentRef = doc(db, "students", lrn);
                     const now = new Date();
 
-                    const manilaTime = new Date(
-                      now.toLocaleString('en-US', { timeZone: "Asia/Manila"})
-                    )
-
+                    const manilaTime = new DateTime.now().setZone("Asia/Manila")
                     // Date format: 2025-07-31
-                    const formattedDate = manilaTime.toISOString().split("T")[0];
-
+                    const formattedDate = manilaTime.toFormat("yyyy-MM-dd");
                     // Time format: 07:01 AM
                     const options = { hour: '2-digit', minute: '2-digit', hour12: true };
-                    const formattedTime = manilaTime.toLocaleTimeString('en-US', options);
+                    const formattedTime = manilaTime.toFormat("hh:mm a")
 
                     const attendanceRef = doc(studentRef, "attendance", formattedDate);
 
