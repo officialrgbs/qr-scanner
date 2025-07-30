@@ -6,6 +6,7 @@ function App() {
   const scannerRef = useRef(null);
   const isScanningRef = useRef(false);
   const [isScanned, setIsScanned] = useState(false);
+  const [parsedData, setParsedData] = useState(null);
 
   useEffect(() => {
     const scannerId = "qr-reader";
@@ -31,8 +32,19 @@ function App() {
                 if (prev !== decodedText) {
                   setIsScanned(true);
 
+                  try {
+                    const parsed = JSON.parse(decodedText);
+                    setParsedData(parsed);
+                  } catch (err) {
+                    setParsedData(null);
+                  }
+
                   setTimeout(() => setIsScanned(false), 2000);
-                  setTimeout(() => setQrData(""), 5000);
+                  setTimeout(() => {
+                    setQrData("")
+                    setIsScanned(false);
+                    setParsedData(null);
+                  }, 5000);
 
                   return decodedText;
                 }
@@ -109,9 +121,21 @@ function App() {
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
                     Detected Content
                   </p>
-                  <p className="text-sm text-gray-900 break-all leading-relaxed font-mono bg-white/50 p-2 rounded-lg">
-                    {qrData}
-                  </p>
+                  {parsedData ? (
+                    <div className="space-y-1 text-sm text-gray-900 font-mono">
+                      <div><span className="text-gray-500">Name:</span> {parsedData.name}</div>
+                      <div><span className="text-gray-500">LRN:</span> {parsedData.lrn}</div>
+                      <div><span className="text-gray-500">Grade:</span> {parsedData.grade}</div>
+                      <div><span className="text-gray-500">Section:</span> {parsedData.section}</div>
+                      <div><span className="text-gray-500">Parent No:</span> {parsedData.parentNumber}</div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-red-500 font-mono break-all">
+                      Invalid or non-JSON QR data:
+                      <br />
+                      {qrData}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
