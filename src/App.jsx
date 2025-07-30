@@ -8,7 +8,11 @@ function App() {
 
   useEffect(() => {
     const scannerId = "qr-reader";
-    const config ={ fps: 10, qrbox: { width: 250, height: 250 } };
+    const config ={ fps: 10, qrbox: function(viewfinderWidth, viewfinderHeight) {
+      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+      const size = Math.floor(minEdge * 0.8); // 80% of the smaller edge
+      return { width: size, height: size };
+    } };
 
     const startScanner = async () => {
       try {
