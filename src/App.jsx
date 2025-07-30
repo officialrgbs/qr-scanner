@@ -8,7 +8,7 @@ function App() {
 
   useEffect(() => {
     const scannerId = "qr-reader";
-    const config ={ fps: 10, qrbox: 250 };
+    const config ={ fps: 10, qrbox: { width: 250, height: 250 } };
 
     const startScanner = async () => {
       try {
