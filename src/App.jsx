@@ -68,36 +68,79 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white">
-      <h2 className="text-xl font-bold mb-4">QR Code Scanner</h2>
-      
-      {/* QR Scanner container with conditional green border animation */}
-      <div 
-        id="qr-reader" 
-        className={`w-full max-w-sm aspect-square rounded-md overflow-hidden shadow-md transition-all duration-500 ${
-          isScanned 
-            ? 'border-4 border-green-500 shadow-green-200 shadow-lg' 
-            : 'border-2 border-gray-200'
-        }`}
-      ></div>
-      
-      {qrData && (
-        <div className="mt-5 w-full max-w-sm flex flex-col items-center">
-          {/* Fixed container with proper text wrapping and mobile-friendly styling */}
-          <div className="p-4 bg-gray-100 rounded text-center w-full break-words overflow-hidden">
-            <strong className="block mb-2">Scanned:</strong> 
-            {/* Allow long URLs/text to wrap properly on mobile */}
-            <span className="break-all text-sm">{qrData}</span>
-          </div>
-          
-          {/* Success indicator with animation */}
-          <div className="mt-2 text-green-600 text-sm flex items-center gap-1">
-            <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            Successfully scanned
-          </div>
+    <>
+      <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Main container with macOS-style card design */}
+      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8">
+        
+        {/* Header with macOS-style typography */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">QR Scanner</h1>
+          <p className="text-sm text-gray-500">Position QR code within the frame</p>
         </div>
-      )}
+        
+        {/* Scanner container with modern macOS styling */}
+        <div className="relative mb-6">
+          <div 
+            id="qr-reader" 
+            className={`w-full aspect-square rounded-xl overflow-hidden transition-all duration-700 ease-out ${
+              isScanned 
+                ? 'ring-4 ring-green-400/50 shadow-2xl shadow-green-500/20 scale-[1.02]' 
+                : 'ring-1 ring-gray-200/50 shadow-lg'
+            }`}
+          ></div>
+          
+          {/* Scanning overlay indicator */}
+          {!qrData && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="w-32 h-32 border-2 border-white/30 rounded-lg animate-pulse"></div>
+            </div>
+          )}
+        </div>
+        
+        {/* Results section with modern card design */}
+        {qrData && (
+          <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+            {/* Scanned data card */}
+            <div className="bg-gray-50/50 backdrop-blur-sm rounded-xl p-4 border border-gray-100">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full mt-2 animate-pulse"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                    Detected Content
+                  </p>
+                  <p className="text-sm text-gray-900 break-all leading-relaxed font-mono bg-white/50 p-2 rounded-lg">
+                    {qrData}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Success status with macOS-style design */}
+            <div className="flex items-center justify-center gap-2 text-green-600 bg-green-50/50 rounded-lg py-2 px-4">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm font-medium">Successfully Scanned</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Bottom helper text */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-400">
+            Camera access required • Auto-clears in 5 seconds
+          </p>
+        </div>
+      </div>
+      
+      {/* Subtle background decoration */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl"></div>
+      </div>
     </div>
+    </>
   )
 }
 
