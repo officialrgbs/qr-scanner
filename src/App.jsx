@@ -123,13 +123,24 @@ function App() {
                     Detected Content
                   </p>
                   {parsedData ? (
-                    <div className="space-y-1 text-sm text-gray-900 font-mono">
-                      <div><span className="text-gray-500">Name:</span> {parsedData.name}</div>
-                      <div><span className="text-gray-500">LRN:</span> {parsedData.lrn}</div>
-                      <div><span className="text-gray-500">Grade:</span> {parsedData.grade}</div>
-                      <div><span className="text-gray-500">Section:</span> {parsedData.section}</div>
-                      <div><span className="text-gray-500">Parent No:</span> {parsedData.parentNumber}</div>
-                    </div>
+                    <>
+                      <button
+                        onClick={() => setShowDetails(prev => !prev)}
+                        className="text-xs text-blue-600 hover:underline mb-2"
+                      >
+                        {showDetails ? "Hide Details ▲" : "Show Details ▼"}
+                      </button>
+
+                      {showDetails && (
+                        <div className="space-y-1 text-sm text-gray-900 font-mono">
+                          <div><span className="text-gray-500">Name:</span> {parsedData.name}</div>
+                          <div><span className="text-gray-500">LRN:</span> {parsedData.lrn}</div>
+                          <div><span className="text-gray-500">Grade:</span> {parsedData.grade}</div>
+                          <div><span className="text-gray-500">Section:</span> {parsedData.section}</div>
+                          <div><span className="text-gray-500">Parent No:</span> {parsedData.parentNumber}</div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <p className="text-sm text-red-500 font-mono break-all">
                       Invalid or non-JSON QR data:
