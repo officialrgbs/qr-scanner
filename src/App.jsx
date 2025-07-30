@@ -1,5 +1,7 @@
 import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react"
+import { db } from "./firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 function App() {
   const [qrData, setQrData] = useState("");
@@ -36,6 +38,36 @@ function App() {
                   try {
                     const parsed = JSON.parse(decodedText);
                     setParsedData(parsed);
+
+                    // Firestore Logic
+                    const lrn = parsed.lrn;
+                    const studentRef = doc(db, "students", lrn);
+                    const now = new Date();
+
+                    const manilaTime = new Date(
+                      now.toLocaleString('en-US', { timeZone: "Asia/Manila "})
+                    )
+
+                    // Date format: 2025-07-31
+                    const formattedDate = manilaTime.toISOString().split("T")[0];
+
+                    // Time format: 07:01 AM
+                    const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+                    const formattedTime = manilaTime.toLocaleTimeString('en-US', options);
+
+                    const attendanceRef = doc(studentRef, "attendance", formattedDate);
+
+                    setDoc(attendanceRef, {
+                      date: formattedDate,
+                      time: formattedTime
+                    }, { merge: true})
+                    .then(() => {
+                      console.log("Attendance recorded for", lrn, formattedDate, formattedTime)
+                    })
+                    .catch((error) => {
+                      console.error("Error writing attendance: ", error);
+                    })
+
                   } catch (err) {
                     setParsedData(null);
                   }
