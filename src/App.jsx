@@ -8,10 +8,11 @@ function App() {
 
   useEffect(() => {
     const scannerId = "qr-reader";
-    const config ={ fps: 10, qrbox: function(viewfinderWidth, viewfinderHeight) {
-      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-      const size = Math.floor(minEdge * 0.8); // 80% of the smaller edge
-      return { width: size, height: size };
+    const config ={ fps: 10,qrbox: (viewfinderWidth, viewfinderHeight) => {
+      return {
+        width: viewfinderWidth,
+        height: viewfinderHeight
+      };
     } };
 
     const startScanner = async () => {
@@ -62,21 +63,15 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-4">
-      <h2 className="text-2xl font-semibold text-center mb-4">📷 QR Code Scanner</h2>
-
-      <div
-        id="qr-reader"
-        className="w-full max-w-xs aspect-square rounded-lg overflow-hidden shadow-md border border-gray-300"
-      ></div>
-
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white">
+      <h2 className="text-xl font-bold mb-4">QR Code Scanner</h2>
+      <div id="qr-reader" className="w-full max-w-sm aspect-square rounded-md overflow-hidden shadow-md"></div>
       {qrData && (
-        <div className="mt-6 p-4 w-full max-w-xs bg-white shadow-md rounded-lg border border-green-400">
-          <p className="text-green-700 font-medium text-sm">✅ Scanned Data:</p>
-          <p className="text-gray-800 break-all">{qrData}</p>
+        <div className="mt-5 p-4 bg-gray-100 rounded text-center w-full max-w-sm">
+          <strong>Scanned:</strong> {qrData}
         </div>
       )}
-    </div>
+   </div>
   )
 }
 
