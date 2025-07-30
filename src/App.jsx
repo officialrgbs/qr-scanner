@@ -7,6 +7,7 @@ function App() {
   const isScanningRef = useRef(false);
   const [isScanned, setIsScanned] = useState(false);
   const [parsedData, setParsedData] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     const scannerId = "qr-reader";
