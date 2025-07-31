@@ -15,6 +15,13 @@ function App() {
   const processedQRsRef = useRef(new Map());
   const currentDayRef = useRef(new Date().toISOString().split("T")[0]);
 
+  const getLocalDateString = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const localtime = new Date(now.getTime() - offset * 60000);
+    return localtime.toISOString().split("T")[0];
+  }
+                        
   useEffect(() => {
     const scannerId = "qr-reader";
     const config ={ fps: 10,qrbox: (viewfinderWidth, viewfinderHeight) => {
@@ -42,7 +49,7 @@ function App() {
                 const uid = parsed.uid;
                 const lrn = parsed.lrn;
                 const now = new Date();
-                const formattedDate = now.toISOString().split("T")[0];
+                const formattedDate = getLocalDateString();
 
                 if (formattedDate !== currentDayRef.current) {
                   currentDayRef.current = formattedDate;
