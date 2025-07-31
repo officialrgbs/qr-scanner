@@ -35,103 +35,90 @@ function App() {
             { facingMode: 'environment' },
             config,
             (decodedText) => {
-              setQrData((prev) => {
-                if (prev !== decodedText) {
-                  setIsScanned(true);
+              try {
+                const parsed = JSON.parse(decodedText);
+                setParsedData(parsed);
 
-                  try {
-                    const parsed = JSON.parse(decodedText);
-                    setParsedData(parsed);
+                const lrn = parsed.lrn;
+                const now = new Date();
+                const formattedDate = now.toISOString().split("T")[0];
 
-                    // Firestore Logic
-                    const lrn = parsed.lrn;
-                    const studentRef = doc(db, "students", lrn);
-                    const now = new Date();
-                    const formattedDate = now.toISOString().split("T")[0]; // e.g. "2025-07-30"
+                if (formattedDate !== currentDayRef.current) {
+                  currentDayRef.current = formattedDate;
+                  processedQRsRef.current.clear();
+                  console.log("New day detected. Resetting QR Tracking.");
+                }
 
-                    if (formattedDate !== currentDayRef.current) {
-                      currentDayRef.current = formattedDate;
-                      processedQRsRef.current.clear();
-                      console.log("New day detected. Resetting QR Tracking.");
+                const todayQrKey = `${lrn}-${formattedDate}`;
+                const scanCount = processedQRsRef.current.get(todayQrKey) || 0;
+
+                if (scanCount >= 2) {
+                  setMessage("This student has already scanned twice today.");
+                  setQrData(decodedText); // show QR as valid
+                  setParsedData(parsed);  // show parsed info
+                  return;
+                }
+
+                // Update scan state (AFTER successful validation)
+                setQrData(decodedText);
+                setIsScanned(true);
+                processedQRsRef.current.set(todayQrKey, scanCount + 1);
+
+                const formattedTime = now.toLocaleTimeString("en-US", {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                });
+
+                const studentRef = doc(db, "students", lrn);
+                const attendanceRef = doc(studentRef, "attendance", formattedDate);
+
+                getDoc(attendanceRef).then(async (docSnap) => {
+                  if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    if (data.timeInDate && data.timeOutDate) {
+                      setMessage("This student has already completed attendance.");
+                      return;
                     }
 
-                    const todayQrKey = `${lrn}-${formattedDate}`;
-
-                    const scanCount = processedQRsRef.current.get(todayQrKey) || 0;
-                    if (scanCount >= 2) {
-                      setMessage("This student has already scanned twice today.");
-                      setIsScanned(false);
-                      setParsedData(null);
-                      setQrData(decodedText);
-
-                      setTimeout(() => {
-                        setQrData("");
-                        setMessage("");
-                      }, 5000);
-
-                      return decodedText;
+                    if (data.timeInDate && !data.timeOutDate) {
+                      await setDoc(attendanceRef, {
+                        timeOutDate: formattedDate,
+                        timeOutTime: formattedTime
+                      }, { merge: true });
                     }
-                    processedQRsRef.current.set(todayQrKey, scanCount + 1);
-
-                  
-                    const formattedTime = now.toLocaleTimeString("en-US", {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    }); // e.g. "07:30 AM"
-
-                    const attendanceRef = doc(studentRef, "attendance", formattedDate);
-
-                    getDoc(attendanceRef).then(async (docSnap) => {
-                      if (docSnap.exists()) {
-                        const data = docSnap.data();
-
-                        if (data.timeInDate && data.timeOutDate) {
-                          processedQRsRef.current.set(todayQrKey, scanCount + 1);
-                          setMessage("This student has already completed attendance.");
-                          return;
-                        }
-
-                        if (data.timeInDate && !data.timeOutDate) {
-                          await setDoc(attendanceRef, {
-                            timeOutDate: formattedDate,
-                            timeOutTime: formattedTime
-                          }, { merge: true });
-                        }
-                      } else {
-                        await setDoc(attendanceRef, {
-                          timeInDate: formattedDate,
-                          timeInTime: formattedTime
-                        });
-                      }
-
-                      processedQRsRef.current.set(todayQrKey, scanCount + 1);
-                      setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`);
-                    })
-
-                  } catch (err) {
-                    setParsedData(null);
+                  } else {
+                    await setDoc(attendanceRef, {
+                      timeInDate: formattedDate,
+                      timeInTime: formattedTime
+                    });
                   }
 
-                  setTimeout(() => setIsScanned(false), 2000);
-                  setTimeout(() => {
-                    setQrData("")
-                    setIsScanned(false);
-                    setParsedData(null);
-                    setMessage("");
-                  }, 5000);
+                  setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`);
+                });
 
-                  return decodedText;
-                }
-                return prev;
-              })
+              } catch (err) {
+                setParsedData(null);
+                setQrData(decodedText);
+                setMessage("Invalid QR format");
+              }
+
+              setTimeout(() => setIsScanned(false), 2000);
+              setTimeout(() => {
+                setQrData("");
+                setIsScanned(false);
+                setParsedData(null);
+                setMessage("");
+              }, 5000);
             },
             (errMsg) => {
 
             }
-          );
-          isScanningRef.current = true;
+          )
         }
+        
+        isScanningRef.current = true;
       } catch (err) {
         console.error("Camera start error.");
       }
