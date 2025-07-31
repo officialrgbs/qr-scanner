@@ -60,6 +60,15 @@ function App() {
                     const scanCount = processedQRsRef.current.get(todayQrKey) || 0;
                     if (scanCount >= 2) {
                       setMessage("This student has already scanned twice today.");
+                      setIsScanned(false);
+                      setParsedData(null);
+                      setQrData(decodedText);
+
+                      setTimeout(() => {
+                        setQrData("");
+                        setMessage("");
+                      }, 5000);
+
                       return decodedText;
                     }
                     processedQRsRef.current.set(todayQrKey, scanCount + 1);
