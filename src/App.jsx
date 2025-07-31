@@ -62,7 +62,6 @@ function App() {
                 // Update scan state (AFTER successful validation)
                 setQrData(decodedText);
                 setIsScanned(true);
-                processedQRsRef.current.set(todayQrKey, scanCount + 1);
 
                 const formattedTime = now.toLocaleTimeString("en-US", {
                   hour: '2-digit',
@@ -150,11 +149,6 @@ function App() {
       }
     }
   }, []);
-
-  const clearProcessedQrs = () => {
-    processedQRsRef.current.clear();
-    setMessage("Processed QR Tracking cleared.")
-  }
 
   return (
     <>
