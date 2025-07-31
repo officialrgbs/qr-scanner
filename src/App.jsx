@@ -1,8 +1,7 @@
 import { Html5Qrcode } from "html5-qrcode";
 import { useState, useEffect, useRef } from "react"
 import { db } from "./firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { DateTime } from "luxon";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 function App() {
   const [qrData, setQrData] = useState("");
@@ -11,6 +10,7 @@ function App() {
   const [isScanned, setIsScanned] = useState(false);
   const [parsedData, setParsedData] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const scannerId = "qr-reader";
@@ -44,27 +44,45 @@ function App() {
                     const lrn = parsed.lrn;
                     const studentRef = doc(db, "students", lrn);
                     const now = new Date();
-const formattedDate = now.toISOString().split("T")[0]; // e.g. "2025-07-30"
+                    const formattedDate = now.toISOString().split("T")[0]; // e.g. "2025-07-30"
 
-const formattedTime = now.toLocaleTimeString("en-US", {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true
-}); // e.g. "07:30 AM"
+                    const formattedTime = now.toLocaleTimeString("en-US", {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    }); // e.g. "07:30 AM"
 
                     const attendanceRef = doc(studentRef, "attendance", formattedDate);
 
-                    setDoc(attendanceRef, {
-                      date: formattedDate,
-                      time: formattedTime
-                    }, { merge: true})
+                    getDoc(attendanceRef).then((docSnap) => {
+                      if (docSnap.exists()) {
+                        const data = docSnap.data();
+
+                        if (data.timeInDate && !data.timeOutDate) {
+                          return setDoc(attendanceRef, 
+                            {
+                              timeOutDate: formattedDate,
+                              timeOutTime: formattedTime
+                            }, { merge: true }
+                          )
+                        } else {
+                          setMessage("Already scanned in and out for today.")
+                          return Promise.resolve();
+                        }
+                      } else {
+                        return setDoc(attendanceRef, {
+                          timeInDate: formattedDate,
+                          timeInTime: formattedTime
+                        })
+                      }
+                    })
                     .then(() => {
-                      console.log("Attendance recorded for", lrn, formattedDate, formattedTime)
+                      setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`)
                     })
                     .catch((error) => {
-                      console.error("Error writing attendance: ", error);
+                      setMessage(`Error writing to database: ${error.message}`);
+                      console.error("error writing database: ", error);
                     })
-
                   } catch (err) {
                     setParsedData(null);
                   }
@@ -74,6 +92,7 @@ const formattedTime = now.toLocaleTimeString("en-US", {
                     setQrData("")
                     setIsScanned(false);
                     setParsedData(null);
+                    setMessage("");
                   }, 5000);
 
                   return decodedText;
@@ -191,6 +210,12 @@ const formattedTime = now.toLocaleTimeString("en-US", {
           </div>
         )}
         
+        {message && (
+          <div className="text-center mt-2 text-sm text-gray-700 bg-white/60 backdrop-blur-sm border border-gray-200 rounded-lg px-3 py-2 shadow">
+            {message}
+          </div>
+        )}
+
         {/* Bottom helper text */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-400">
