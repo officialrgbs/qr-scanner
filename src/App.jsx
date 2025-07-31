@@ -232,7 +232,7 @@ function App() {
 
         <div className="mt-4 text-center">
           <button
-            onClick={clearProcessedQRs}
+            onClick={clearProcessedQrs}
             className="text-xs text-gray-400 hover:text-gray-600 underline"
           >
             Clear Processed QRs (Debug)
