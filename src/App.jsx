@@ -97,10 +97,14 @@ function App() {
                   }
 
                   if (!docSnap.exists() || scanCount === 0) {
+                    const isLate = now.getHours() >= 7;
+                    const status = isLate ? "Late" : "On Time";
+                    
                     await setDoc(attendanceRef, { 
                       timeInDate: formattedDate,
                       timeInTime: formattedTime,
-                      scanCount: 1
+                      scanCount: 1,
+                      status: status
                     }, { merge: true })
                   }
 
