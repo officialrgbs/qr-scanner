@@ -44,13 +44,13 @@ function App() {
                     const lrn = parsed.lrn;
                     const studentRef = doc(db, "students", lrn);
                     const now = new Date();
+const formattedDate = now.toISOString().split("T")[0]; // e.g. "2025-07-30"
 
-                    const manilaTime = new DateTime.now().setZone("Asia/Manila")
-                    // Date format: 2025-07-31
-                    const formattedDate = manilaTime.toFormat("yyyy-MM-dd");
-                    // Time format: 07:01 AM
-                    const options = { hour: '2-digit', minute: '2-digit', hour12: true };
-                    const formattedTime = manilaTime.toFormat("hh:mm a")
+const formattedTime = now.toLocaleTimeString("en-US", {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true
+}); // e.g. "07:30 AM"
 
                     const attendanceRef = doc(studentRef, "attendance", formattedDate);
 
