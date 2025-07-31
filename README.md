@@ -1,12 +1,30 @@
-# React + Vite
+# 📚 QR Code-Based Attendance System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A smart attendance tracking system built using **React**, **Firebase**, and **QR codes** — designed to make school attendance faster, more accurate, and parent-connected in real time.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📌 Background
 
-## Expanding the ESLint configuration
+Attendance plays a vital role in monitoring student performance, safety, and discipline. In traditional school settings, teachers manually check attendance at the beginning of each class, which is time-consuming, prone to error, and lacks transparency.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To address these issues, this project introduces a **QR Code-Based Attendance System**. Each student has a unique QR code containing their information. Upon arriving at school, they scan the QR code using a camera-based scanner (or mobile device). The system logs their presence in Firebase and notifies teachers and parents in real time through a connected dashboard or notification system.
+
+By leveraging modern technology, we can make attendance:
+- **Faster**
+- **More accurate**
+- **More secure**
+- **Easier to monitor**
+
+---
+
+## ✅ Key Features
+
+- **⚡ Fast Scanning**: Students scan their code in seconds — no need for manual roll call.
+- **🎯 Accurate Tracking**: Eliminates cheating or mistaken entries.
+- **📊 Real-Time Dashboard**: Teachers can monitor attendance status immediately.
+- **📦 Auto Recordkeeping**: All records are saved in a cloud database.
+- **📲 Parent Notifications**: Parents can receive instant SMS/push notifications when students are marked present.
+- **🌱 Paperless System**: No more physical attendance sheets.
+- **🛡️ Improved Security**: Prevents unauthorized access with unique QR codes.
+- **🧩 Scalable Design**: Customizable features for future expansion (e.g., time-out, leave requests).
