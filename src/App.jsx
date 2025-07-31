@@ -12,7 +12,8 @@ function App() {
   const [showDetails, setShowDetails] = useState(false);
   const [message, setMessage] = useState("");
 
-  const processedQRsRef = useRef(new Set());
+  const processedQRsRef = useRef(new Map());
+  const currentDayRef = useRef(new Date().toISOString().split("T")[0]);
 
   useEffect(() => {
     const scannerId = "qr-reader";
@@ -48,12 +49,21 @@ function App() {
                     const now = new Date();
                     const formattedDate = now.toISOString().split("T")[0]; // e.g. "2025-07-30"
 
+                    if (formattedDate !== currentDayRef.current) {
+                      currentDayRef.current = formattedDate;
+                      processedQRsRef.current.clear();
+                      console.log("New day detected. Resetting QR Tracking.");
+                    }
+
                     const todayQrKey = `${lrn}-${formattedDate}`;
 
-                    if (processedQRsRef.current.has(todayQrKey)) {
-                      setMessage("This student has already completed attendance.");
+                    const scanCount = processedQRsRef.current.get(todayQrKey) || 0;
+                    if (scanCount >= 2) {
+                      setMessage("This student has already scanned twice today.");
                       return decodedText;
                     }
+                    processedQRsRef.current.set(todayQrKey, scanCount + 1);
+
                   
                     const formattedTime = now.toLocaleTimeString("en-US", {
                       hour: '2-digit',
@@ -63,35 +73,33 @@ function App() {
 
                     const attendanceRef = doc(studentRef, "attendance", formattedDate);
 
-                    getDoc(attendanceRef).then((docSnap) => {
+                    getDoc(attendanceRef).then(async (docSnap) => {
                       if (docSnap.exists()) {
                         const data = docSnap.data();
 
                         if (data.timeInDate && data.timeOutDate) {
-                          processedQRsRef.current.add(todayQrKey);
+                          processedQRsRef.current.set(todayQrKey, scanCount + 1);
                           setMessage("This student has already completed attendance.");
-                          return Promise.resolve();
-                        } else if (data.timeInDate && !data.timeOutDate) {
-                          return setDoc(attendanceRef, {
+                          return;
+                        }
+
+                        if (data.timeInDate && !data.timeOutDate) {
+                          await setDoc(attendanceRef, {
                             timeOutDate: formattedDate,
                             timeOutTime: formattedTime
-                          }, { merge: true }
-                          ).then(() => {
-                            processedQRsRef.current.add(todayQrKey);
-                          })
+                          }, { merge: true });
                         }
                       } else {
-                        return setDoc(attendanceRef, {
+                        await setDoc(attendanceRef, {
                           timeInDate: formattedDate,
                           timeInTime: formattedTime
                         });
                       }
-                    }).then(() => {
-                      setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`)
+
+                      processedQRsRef.current.set(todayQrKey, scanCount + 1);
+                      setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`);
                     })
-                    .catch((err) => {
-                      setMessage(`Error writing to database: ${err.message}`)
-                    })
+
                   } catch (err) {
                     setParsedData(null);
                   }
