@@ -74,25 +74,35 @@ function App() {
                 const attendanceRef = doc(studentRef, "attendance", formattedDate);
 
                 getDoc(attendanceRef).then(async (docSnap) => {
-                  if (docSnap.exists()) {
-                    const data = docSnap.data();
+                  let data = {};
+                  let scanCount = 0;
 
-                    if (data.timeInDate && data.timeOutDate) {
-                      setMessage("This student has already completed attendance.");
+                  if (docSnap.exists()) {
+                    data = docSnap.data();
+                    scanCount = data.scanCount || 0;
+                  
+                    if (scanCount >= 2) {
+                      setMessage("This student has already scanned twice today.")
+                      setQrData(decodedText);
+                      setParsedData(parsed);
                       return;
                     }
 
-                    if (data.timeInDate && !data.timeOutDate) {
+                    if (scanCount === 1) {
                       await setDoc(attendanceRef, {
                         timeOutDate: formattedDate,
-                        timeOutTime: formattedTime
-                      }, { merge: true });
+                        timeOutTime: formattedTime,
+                        scanCount: 2
+                      }, { merge: true })
                     }
-                  } else {
-                    await setDoc(attendanceRef, {
+                  }
+
+                  if (!docSnap.exists() || scanCount === 0) {
+                    await setDoc(attendanceRef, { 
                       timeInDate: formattedDate,
-                      timeInTime: formattedTime
-                    });
+                      timeInTime: formattedTime,
+                      scanCount: 1
+                    }, { merge: true })
                   }
 
                   setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`);
