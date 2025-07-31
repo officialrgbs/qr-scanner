@@ -12,6 +12,8 @@ function App() {
   const [showDetails, setShowDetails] = useState(false);
   const [message, setMessage] = useState("");
 
+  const processedQRsRef = useRef(new Set());
+
   useEffect(() => {
     const scannerId = "qr-reader";
     const config ={ fps: 10,qrbox: (viewfinderWidth, viewfinderHeight) => {
@@ -46,6 +48,13 @@ function App() {
                     const now = new Date();
                     const formattedDate = now.toISOString().split("T")[0]; // e.g. "2025-07-30"
 
+                    const todayQrKey = `${lrn}-${formattedDate}`;
+
+                    if (processedQRsRef.current.has(todayQrKey)) {
+                      setMessage("This student has already completed attendance.");
+                      return decodedText;
+                    }
+                  
                     const formattedTime = now.toLocaleTimeString("en-US", {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -58,30 +67,30 @@ function App() {
                       if (docSnap.exists()) {
                         const data = docSnap.data();
 
-                        if (data.timeInDate && !data.timeOutDate) {
-                          return setDoc(attendanceRef, 
-                            {
-                              timeOutDate: formattedDate,
-                              timeOutTime: formattedTime
-                            }, { merge: true }
-                          )
-                        } else {
-                          setMessage("Already scanned in and out for today.")
+                        if (data.timeInDate && data.timeOutDate) {
+                          processedQRsRef.current.add(todayQrKey);
+                          setMessage("This student has already completed attendance.");
                           return Promise.resolve();
+                        } else if (data.timeInDate && !data.timeOutDate) {
+                          return setDoc(attendanceRef, {
+                            timeOutDate: formattedDate,
+                            timeOutTime: formattedTime
+                          }, { merge: true }
+                          ).then(() => {
+                            processedQRsRef.current.add(todayQrKey);
+                          })
                         }
                       } else {
                         return setDoc(attendanceRef, {
                           timeInDate: formattedDate,
                           timeInTime: formattedTime
-                        })
+                        });
                       }
-                    })
-                    .then(() => {
+                    }).then(() => {
                       setMessage(`Attendance updated for ${parsed.name} (${lrn}) at ${formattedTime}`)
                     })
-                    .catch((error) => {
-                      setMessage(`Error writing to database: ${error.message}`);
-                      console.error("error writing database: ", error);
+                    .catch((err) => {
+                      setMessage(`Error writing to database: ${err.message}`)
                     })
                   } catch (err) {
                     setParsedData(null);
@@ -127,6 +136,11 @@ function App() {
       }
     }
   }, []);
+
+  const clearProcessedQrs = () => {
+    processedQRsRef.current.clear();
+    setMessage("Processed QR Tracking cleared.")
+  }
 
   return (
     <>
@@ -215,6 +229,15 @@ function App() {
             {message}
           </div>
         )}
+
+        <div className="mt-4 text-center">
+          <button
+            onClick={clearProcessedQRs}
+            className="text-xs text-gray-400 hover:text-gray-600 underline"
+          >
+            Clear Processed QRs (Debug)
+          </button>
+        </div>
 
         {/* Bottom helper text */}
         <div className="mt-8 text-center">
